@@ -85,7 +85,7 @@ resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.this.id
   cidr_block              = var.public_subnet_cidrs[count.index]
   map_public_ip_on_launch = true
-  availability_zone       = data.aws_region.current.name == "us-east-1" ? "us-east-1${["a","b","c"][count.index]}" : null
+  availability_zone       = data.aws_region.current.name == "us-east-1" ? "us-east-1${["a", "b", "c"][count.index]}" : null
 
   tags = merge(local.tags, {
     Name = "${local.project_name}-public-${count.index + 1}"
@@ -158,11 +158,11 @@ resource "aws_security_group" "ecs_sg" {
   vpc_id      = aws_vpc.this.id
 
   ingress {
-    description      = "From ALB on HTTP"
-    from_port        = 80
-    to_port          = 80
-    protocol         = "tcp"
-    security_groups  = [aws_security_group.alb_sg.id]
+    description     = "From ALB on HTTP"
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb_sg.id]
   }
 
   egress {
@@ -316,9 +316,7 @@ resource "aws_ecs_task_definition" "nginx" {
       command = [
         "/bin/sh",
         "-c",
-        "echo '${replace(local.index_html, "'", "\\'")}' > /usr/share/nginx/html/index.html && " ..
-        "echo '${replace(local.nginx_conf, "'", "\\'")}' > /etc/nginx/nginx.conf && " ..
-        "nginx -g 'daemon off;'"
+        "echo '${replace(local.index_html, "'", "\\'")}' > /usr/share/nginx/html/index.html && echo '${replace(local.nginx_conf, "'", "\\'")}' > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
       ]
       logConfiguration = {
         logDriver = "awslogs"
@@ -335,9 +333,6 @@ resource "aws_ecs_task_definition" "nginx" {
     operating_system_family = "LINUX"
     cpu_architecture        = "X86_64"
   }
-
-  cpu    = var.task_cpu
-  memory = var.task_memory
 
   tags = local.tags
 }
