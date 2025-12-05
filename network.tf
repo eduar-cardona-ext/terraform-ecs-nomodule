@@ -91,11 +91,11 @@ resource "aws_security_group" "alb_sg" {
   }
 
   egress {
-    description = "All outbound"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    description = "To ECS tasks on HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
   }
 
   tags = merge(local.tags, {
@@ -118,11 +118,19 @@ resource "aws_security_group" "ecs_sg" {
   }
 
   egress {
-    description = "All outbound"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    description = "HTTPS to internet for AWS APIs and image pulls"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "DNS to VPC resolver"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = [var.vpc_cidr]
   }
 
   tags = merge(local.tags, {
