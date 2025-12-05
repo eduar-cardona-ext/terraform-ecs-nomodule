@@ -47,3 +47,9 @@ variable "task_memory" {
   type        = string
   default     = "512"
 }
+
+variable "allowed_alb_ingress_cidrs" {
+  description = "List of CIDR blocks allowed to access the ALB. Defaults to VPC CIDR for private access only."
+  type        = list(string)
+  default     = null
+}

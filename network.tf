@@ -11,6 +11,15 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 ########################
+# Local Values
+########################
+
+locals {
+  # Default ALB ingress to VPC CIDR if not explicitly specified (private access only)
+  alb_ingress_cidrs = var.allowed_alb_ingress_cidrs != null ? var.allowed_alb_ingress_cidrs : [var.vpc_cidr]
+}
+
+########################
 # VPC & Networking
 ########################
 
@@ -68,26 +77,26 @@ resource "aws_route_table_association" "public_assoc" {
 # Security Groups
 ########################
 
-# ALB security group: allow HTTP/HTTPS from anywhere
+# ALB security group: allow HTTP/HTTPS from specified CIDR ranges (defaults to VPC CIDR for private access)
 resource "aws_security_group" "alb_sg" {
   name        = "${local.project_name}-alb-sg"
   description = "Security group for ALB"
   vpc_id      = aws_vpc.this.id
 
   ingress {
-    description = "HTTP from anywhere"
+    description = "HTTP from allowed CIDRs"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = local.alb_ingress_cidrs
   }
 
   ingress {
-    description = "HTTPS from anywhere"
+    description = "HTTPS from allowed CIDRs"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = local.alb_ingress_cidrs
   }
 
   egress {
